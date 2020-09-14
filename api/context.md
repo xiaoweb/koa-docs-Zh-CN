@@ -70,21 +70,22 @@ koa 使用 [cookies](https://github.com/pillarjs/cookies) 模块，其中只需�
 ### ctx.cookies.set(name, value, [options])
 
   通过 `options` 设置 cookie `name` 的 `value` :
-
- - `maxAge` 一个数字表示从 Date.now() 得到的毫秒数
- - `signed` cookie 签名值
- - `expires` cookie 过期的 `Date`
- - `path` cookie 路径, 默认是`'/'`
- - `domain` cookie 域名
- - `secure` 安全 cookie
- - `httpOnly` 服务器可访问 cookie,  默认是 __true__
- - `overwrite` 一个布尔值，表示是否覆盖以前设置的同名的 cookie (默认是 __false__). 如果是 true, 在同一个请求中设置相同名称的所有 Cookie（不管路径或域）是否在设置此Cookie 时从 Set-Cookie 标头中过滤掉。
+  
+ * `maxAge`: 一个数字, 表示从 `Date.now()` 得到的毫秒数.
+* `expires`: 一个 `Date` 对象, 表示 cookie 的到期日期 (默认情况下在会话结束时过期).
+* `path`: 一个字符串, 表示 cookie 的路径 (默认是`/`).
+* `domain`: 一个字符串, 指示 cookie 的域 (无默认值).
+* `secure`: 一个布尔值, 表示 cookie 是否仅通过 HTTPS 发送 (HTTP 下默认为 `false`, HTTPS 下默认为 `true`). [阅读有关此参数的更多信息](https://github.com/pillarjs/cookies#secure-cookies).
+* `httpOnly`: 一个布尔值, 表示 cookie 是否仅通过 HTTP(S) 发送，, 且不提供给客户端 JavaScript (默认为 `true`).
+* `sameSite`: 一个布尔值或字符串,  表示该 cookie 是否为 "相同站点" cookie (默认为 `false`). 可以设置为 `'strict'`, `'lax'`, `'none'`, 或 `true` (映射为 `'strict'`).
+* `signed`: 一个布尔值, 表示是否要对 cookie 进行签名 (默认为 `false`). 如果为 `true`, 则还会发送另一个后缀为 `.sig` 的同名 cookie, 使用一个 27-byte url-safe base64 SHA1 值来表示针对第一个 [Keygrip](https://www.npmjs.com/package/keygrip) 键的 _cookie-name_=_cookie-value_ 的哈希值. 此签名密钥用于检测下次接收 cookie 时的篡改.
+* `overwrite`: 一个布尔值, 表示是否覆盖以前设置的同名的 cookie (默认是 `false`). 如果是 true, 在同一个请求中设置相同名称的所有 Cookie（无论路径或域）是否在设置此Cookie 时从 Set-Cookie 消息头中过滤掉.
 
 koa 使用传递简单参数的 [cookies](https://github.com/pillarjs/cookies) 模块。
 
 ### ctx.throw([status], [msg], [properties])
 
-Helper 方法抛出一个 `.status` 属性默认为 `500` 的错误，这将允许 Koa 做出适当地响应。
+用来抛出一个包含 `.status` 属性错误的帮助方法，其默认值为 `500`。这样 Koa 就可以做出适当地响应。
 
 允许以下组合：
 
@@ -115,7 +116,7 @@ koa 使用 [http-errors](https://github.com/jshttp/http-errors) 来创建错误�
 
 ### ctx.assert(value, [status], [msg], [properties])
 
-当 `!value` 时，Helper 方法抛出类似于 `.throw()` 的错误。这与 node 的 [assert()](http://nodejs.org/api/assert.html) 方法类似.
+当 `!value` 时抛出一个类似 `.throw` 错误的帮助方法。这与 node 的 [assert()](http://nodejs.org/api/assert.html) 方法类似.
 
 ```js
 ctx.assert(ctx.state.user, 401, 'User not found. Please login!');

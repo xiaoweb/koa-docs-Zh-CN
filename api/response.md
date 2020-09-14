@@ -1,16 +1,16 @@
 # 响应(Response)
 
-Koa `Response` 对象是在 node 的 vanilla 响应对象之上的抽象，提供了诸多对 HTTP 服务器开发有用的功能。
+Koa `Response` 对象是在 node 的原生响应对象之上的抽象，提供了诸多对 HTTP 服务器开发有用的功能。
 
 ## API
 
 ### response.header
 
-响应标头对象。
+响应头对象。
 
 ### response.headers
 
-响应标头对象。别名是 `response.header`。
+响应头对象。别名是 `response.header`。
 
 ### response.socket
 
@@ -85,6 +85,15 @@ Koa `Response` 对象是在 node 的 vanilla 响应对象之上的抽象，提�
 
 __注意__: 不用太在意记住这些字符串, 如果你写错了,可以查阅这个列表随时更正.
 
+由于 `response.status` 默认设置为 `404`，因此发送没有 body 且状态不同的响应的操作如下：
+
+```js
+ctx.response.status = 200;
+
+// 或其他任何状态
+ctx.response.status = 204;
+```
+
 ### response.message
 
 获取响应的状态消息. 默认情况下, `response.message` 与 `response.status` 关联.
@@ -149,7 +158,7 @@ Content-Type 默认为 `application/octet-stream`。
 const PassThrough = require('stream').PassThrough;
 
 app.use(async ctx => {
-  ctx.body = someHTTPStream.on('error', ctx.onerror).pipe(PassThrough());
+  ctx.body = someHTTPStream.on('error', (err) => ctx.onerror(err)).pipe(PassThrough());
 });
 ```
 
@@ -159,7 +168,7 @@ Content-Type 默认为 `application/json`. 这包括普通的对象 `{ foo: 'bar
 
 ### response.get(field)
 
-不区分大小写获取响应标头字段值 `field`。
+不区分大小写获取响应头字段值 `field`。
 
 ```js
 const etag = ctx.response.get('ETag');
@@ -167,8 +176,8 @@ const etag = ctx.response.get('ETag');
 
 ### response.has(field)
 
-如果当前在传出标头中设置了由名称标识的标头，则返回 `true`.
-标头名称匹配不区分大小写.
+如果当前在响应头中设置了由名称标识的消息头，则返回 `true`.
+消息头名称匹配不区分大小写.
 
 ```js
 const rateLimited = ctx.response.has('X-RateLimit-Limit');
@@ -177,7 +186,7 @@ const rateLimited = ctx.response.has('X-RateLimit-Limit');
 
 ### response.set(field, value)
 
-设置响应标头 `field` 到 `value`:
+设置响应头 `field` 到 `value`:
 
 ```js
 ctx.set('Cache-Control', 'no-cache');
@@ -185,7 +194,7 @@ ctx.set('Cache-Control', 'no-cache');
 
 ### response.append(field, value)
 
-用值 `val` 附加额外的标头 `field`。
+用值 `val` 附加额外的消息头 `field`。
 
 ```js
 ctx.append('Link', '<http://127.0.0.1/>');
@@ -193,7 +202,7 @@ ctx.append('Link', '<http://127.0.0.1/>');
 
 ### response.set(fields)
 
-用一个对象设置多个响应标头`fields`:
+用一个对象设置多个响应头`fields`:
 
 ```js
 ctx.set({
@@ -202,15 +211,17 @@ ctx.set({
 });
 ```
 
-这将委托给 [setHeader](https://nodejs.org/dist/latest/docs/api/http.html#http_request_setheader_name_value) ，它通过指定的键设置或更新标头，并且不重置整个标头。
+这将委托给 [setHeader](https://nodejs.org/dist/latest/docs/api/http.html#http_request_setheader_name_value) ，它通过指定的键设置或更新消息头，并且不重置整个消息头。
 
 ### response.remove(field)
 
-删除标头 `field`。
+删除消息头 `field`。
 
 ### response.type
 
-获取响应 `Content-Type` 不含参数 "charset"。
+获取响应 `Content-Type`, 不含 "charset" 等参数。
+
+> 译者注: 这里其实是只获取 _mime-type_, 详见[源码及其注释](https://github.com/koajs/koa/blob/eda27608f7d39ede86d7b402aae64b1867ce31c6/lib/response.js#L371)
 
 ```js
 const ct = ctx.type;
@@ -256,7 +267,7 @@ app.use(async (ctx, next) => {
 
 执行 [302] 重定向到 `url`.
 
-字符串 “back” 是特别提供Referrer支持的，当Referrer不存在时，使用 `alt` 或“/”。
+字符串 “back” 是特别提供 Referrer 支持的，当 Referrer 不存在时，使用 `alt` 或 “/”。
 
 ```js
 ctx.redirect('back');
@@ -265,7 +276,7 @@ ctx.redirect('/login');
 ctx.redirect('http://google.com');
 ```
 
-要更改 “302” 的默认状态，只需在该调用之前或之后分配状态。要变更主体请在此调用之后:
+要更改 “302” 的默认状态，只需在该调用之前或之后给 `status` 赋值。要变更主体请在此调用之后:
 
 ```js
 ctx.status = 301;
@@ -283,11 +294,11 @@ ctx.body = 'Redirecting to shopping cart';
 
 ### response.lastModified
 
-将 `Last-Modified` 标头返回为 `Date`, 如果存在。
+将 `Last-Modified` 消息头返回为 `Date`, 如果存在。
 
 ### response.lastModified=
 
-  将 `Last-Modified` 标头设置为适当的 UTC 字符串。您可以将其设置为 `Date` 或日期字符串。
+  将 `Last-Modified` 消息头设置为适当的 UTC 字符串。您可以将其设置为 `Date` 或日期字符串。
 
 ```js
 ctx.response.lastModified = new Date();
@@ -304,8 +315,8 @@ ctx.response.etag = crypto.createHash('md5').update(ctx.body).digest('hex');
 
 ### response.vary(field)
 
-在 `field` 上变化。
+设置 `field` 的 `vary`。
 
 ### response.flushHeaders()
 
-刷新任何设置的标头，并开始主体。
+刷新任何设置的消息头，然后是主体(body)。

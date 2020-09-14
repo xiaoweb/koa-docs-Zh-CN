@@ -96,7 +96,9 @@ app.listen(3000);
   - `app.env` 默认是 __NODE_ENV__ 或 "development"
   - `app.keys` 签名的 cookie 密钥数组
   - `app.proxy` 当真正的代理头字段将被信任时
-  - `app.subdomainOffset` 对于要忽略的 `.subdomains` 偏移[2]
+  - 忽略 `.subdomains` 的 `app.subdomainOffset` 偏移量，默认为 2
+  - `app.proxyIpHeader` 代理 ip 消息头, 默认为 `X-Forwarded-For`
+  - `app.maxIpsCount` 从代理 ip 消息头读取的最大 ips, 默认为 0 (代表无限)
 
 您可以将设置传递给构造函数:
 
@@ -154,7 +156,23 @@ https.createServer(app.callback()).listen(3001);
 
 ## app.use(function)
 
-将给定的中间件方法添加到此应用程序。参阅 [Middleware](https://github.com/koajs/koa/wiki#middleware) 获取更多信息.
+将给定的中间件方法添加到此应用程序。`app.use()` 返回 `this`, 因此可以链式表达.
+  
+```js
+app.use(someMiddleware)
+app.use(someOtherMiddleware)
+app.listen(3000)
+```
+
+它等同于
+  
+```js
+app.use(someMiddleware)
+  .use(someOtherMiddleware)
+  .listen(3000)
+```
+
+参阅 [Middleware](https://github.com/koajs/koa/wiki#middleware) 获取更多信息.
 
 ## app.keys=
 
